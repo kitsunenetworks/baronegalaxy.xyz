@@ -18,7 +18,7 @@ const categories = [
   { label: "Kernels", value: "Tweaks e performance" },
   { label: "Root & Recovery", value: "Magisk, KernelSU e TWRP" },
   { label: "Firmware", value: "Vendor e imagens oficiais" },
-  { label: "Hardware", value: "ESP32 e embedded" },
+  { label: "Android", value: "Mods, dispositivos e personalização" },
   { label: "Labs", value: "Web, AI e software" },
 ];
 
@@ -93,15 +93,15 @@ export default function Home() {
             </div>
           </div>
 
-          <nav className="hidden items-center gap-6 text-sm text-zinc-300 md:flex">
-            <a href="#feed" className="transition hover:text-white">Feed</a>
-            <a href="/dashboard" className="transition hover:text-white">Dashboard</a>
-            <a href="/admin" className="transition hover:text-white">Admin</a>
-            <a href="/login" className="transition hover:text-violet-200">Login</a>
+          <nav className="hidden items-center gap-1 rounded-full border border-white/10 bg-black/15 p-1 text-sm text-zinc-300 md:flex">
+            <a href="#feed" className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-white">Explorar</a>
+            <a href="/dashboard" className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-white">Meu painel</a>
+            <a href="/admin" className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-white">Moderação</a>
+            <a href="/login" className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-violet-200">Entrar</a>
           </nav>
 
-          <a href="/login" className="rounded-xl bg-violet-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-400 md:rounded-full">
-            Entrar
+          <a href="/login" className="rounded-xl bg-violet-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-400 md:hidden">
+            Acessar
           </a>
         </header>
 
@@ -112,7 +112,7 @@ export default function Home() {
             <div className="max-w-2xl">
               <div className="hero-kicker mb-4 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-violet-200">
                 <Sparkles className="h-3.5 w-3.5" />
-                Firebase-first community
+                BaroneGalaxy community
               </div>
               <h1 className="hero-title max-w-3xl text-4xl font-bold tracking-tight text-white md:text-6xl">
                 O laboratório da próxima ideia<span className="text-cyan-300">.</span>
@@ -152,7 +152,7 @@ export default function Home() {
               key={category.label}
               onClick={() => {
                 setSearch("");
-                setActiveTag(category.label === "Custom ROMs" ? "Android" : category.label);
+                setActiveTag(category.label === "Custom ROMs" || category.label === "Android" ? "Android" : category.label);
                 document.getElementById("feed")?.scrollIntoView({ behavior: "smooth" });
               }}
               className="category-tile group text-left"
