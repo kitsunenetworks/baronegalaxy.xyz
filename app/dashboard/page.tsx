@@ -7,12 +7,15 @@ import { useRouter } from "next/navigation";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { getUserProfile, type AppUserProfile } from "@/lib/auth";
-import { fetchUserProjects } from "@/lib/projects";
+import { fetchProjects, fetchUserProjects } from "@/lib/projects";
 
 type ProjectSummary = {
   id: string;
   title: string;
   summary: string;
+  authorId: string;
+  authorName?: string;
+  status?: string;
   likesCount?: number;
   commentsCount?: number;
 };
@@ -21,6 +24,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<AppUserProfile | null>(null);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
+  const [communityProjects, setCommunityProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,9 +45,10 @@ export default function DashboardPage() {
       }
 
       try {
-        const [userProfile, userProjects] = await Promise.all([
+        const [userProfile, userProjects, allProjects] = await Promise.all([
           getUserProfile(currentUser.uid),
           fetchUserProjects(currentUser.uid),
+          fetchProjects(),
         ]);
 
         const nextProfile = userProfile ?? {
@@ -63,6 +68,7 @@ export default function DashboardPage() {
 
         setProfile(nextProfile);
         setProjects(userProjects as ProjectSummary[]);
+        setCommunityProjects((allProjects as ProjectSummary[]).filter((project) => project.authorId !== currentUser.uid && project.status !== "hidden"));
       } catch (error) {
         console.error(error);
       } finally {
@@ -107,9 +113,10 @@ export default function DashboardPage() {
       </div>
 
       <nav className="dashboard-tabs mb-8 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-zinc-900/60 p-2" aria-label="Navegação do painel">
-        <a href="#postagens" className="dashboard-tab dashboard-tab--active rounded-xl px-4 py-2 text-sm font-medium">Minhas postagens</a>
-        <Link href={`/perfil/${profile?.uid}`} className="rounded-xl px-4 py-2 text-sm text-zinc-400 transition hover:bg-white/5 hover:text-white">Ver perfil</Link>
-        <Link href="/dashboard/perfil" className="rounded-xl px-4 py-2 text-sm text-zinc-400 transition hover:bg-white/5 hover:text-white">Configurações</Link>
+        <a href="#minhas-postagens" className="dashboard-tab dashboard-tab--active rounded-xl px-4 py-2 text-sm font-medium">Minhas postagens</a>
+        <a href="#comunidade" className="dashboard-tab rounded-xl px-4 py-2 text-sm font-medium">Comunidade</a>
+        <Link href={`/perfil/${profile?.uid}`} className="dashboard-tab rounded-xl px-4 py-2 text-sm font-medium">Ver perfil</Link>
+        <Link href="/dashboard/perfil" className="dashboard-tab rounded-xl px-4 py-2 text-sm font-medium">Configurações</Link>
         <Link href="/dashboard/new" className="dashboard-tab dashboard-tab--action ml-auto inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium"><PencilLine className="h-4 w-4" /> Nova publicação</Link>
       </nav>
 
@@ -126,7 +133,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div id="postagens" className="dashboard-posts rounded-3xl border border-white/10 bg-zinc-900/70 p-6 lg:col-span-2">
+        <div id="minhas-postagens" className="dashboard-posts rounded-3xl border border-white/10 bg-zinc-900/70 p-6 lg:col-span-2">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-200">
               <ShieldCheck className="h-6 w-6" />
@@ -143,7 +150,6 @@ export default function DashboardPage() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-400/10 text-violet-200"><FilePlus2 className="h-6 w-6" /></div>
                 <p className="mt-4 text-lg font-medium text-zinc-100">Seu laboratório começa aqui</p>
                 <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-400">Publique uma ROM, kernel, ferramenta ou experimento e transforme sua página em um histórico vivo de builds.</p>
-                <Link href="/dashboard/new" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-400"><PencilLine className="h-4 w-4" /> Criar primeira build</Link>
               </div>
             ) : (
               <div className="space-y-3">
@@ -163,15 +169,34 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <Link
-              href="/dashboard/new"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-violet-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-400"
-            >
-              Publicar projeto
-              <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
         </div>
+      </section>
+
+      <section id="comunidade" className="dashboard-posts mt-6 rounded-3xl border border-white/10 bg-zinc-900/70 p-6">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-cyan-300/70">Feed da comunidade</p>
+            <h2 className="mt-1 text-xl font-semibold">Descobertas recentes</h2>
+          </div>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-400">{communityProjects.length} publicações</span>
+        </div>
+        {communityProjects.length === 0 ? (
+          <div className="dashboard-empty rounded-2xl border border-dashed border-cyan-400/20 bg-cyan-400/5 p-8 text-center text-sm text-zinc-400">As próximas descobertas da comunidade aparecerão aqui.</div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {communityProjects.slice(0, 6).map((project) => (
+              <Link key={project.id} href={`/projeto/${project.id}`} className="dashboard-community-item rounded-2xl border border-white/10 bg-zinc-950/50 p-4 transition hover:border-cyan-400/30 hover:bg-cyan-400/5">
+                <div className="flex items-start justify-between gap-3">
+                  <div><p className="font-medium text-zinc-100">{project.title}</p><p className="mt-1 text-xs text-cyan-200/70">por {project.authorName || "Membro"}</p></div>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-cyan-300" />
+                </div>
+                <p className="mt-3 line-clamp-2 text-sm leading-6 text-zinc-400">{project.summary}</p>
+                <div className="mt-3 flex gap-4 text-xs text-zinc-500"><span>{project.likesCount ?? 0} curtidas</span><span>{project.commentsCount ?? 0} comentários</span></div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );

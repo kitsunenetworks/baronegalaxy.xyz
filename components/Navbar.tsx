@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LogOut, Plus, UserCircle2 } from "lucide-react";
+import { LogOut, UserCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
@@ -87,9 +87,6 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
-              <Link href="/dashboard/new" className="site-nav__publish" title="Criar nova postagem">
-                <Plus /> <span>Postar</span>
-              </Link>
               <button onClick={handleLogout} className="site-nav__logout" title="Sair">
                 <LogOut />
               </button>

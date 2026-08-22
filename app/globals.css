@@ -148,6 +148,7 @@ textarea {
 .dashboard-stat:hover { transform: translateY(-2px); border-color: rgba(167,139,250,.35); background: rgba(255,255,255,.08); }
 .dashboard-posts { box-shadow: 0 20px 60px rgba(0,0,0,.16); }
 .dashboard-empty { background: radial-gradient(circle at 50% 0, rgba(139,92,246,.12), transparent 55%), rgba(139,92,246,.04); }
+.dashboard-community-item { min-height: 150px; }
 .dashboard-loading { animation: pulse 1.5s ease-in-out infinite; }
 @keyframes pulse { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
 .site-profile-menu { position: relative; }
