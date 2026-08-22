@@ -122,7 +122,7 @@ export async function fetchProjects() {
 }
 
 export async function fetchUserProjects(uid: string) {
-  if (!db) {
+  if (!uid || !db) {
     throw new Error("Firebase Firestore não está configurado.");
   }
 
@@ -137,7 +137,7 @@ export async function fetchUserProjects(uid: string) {
 }
 
 export async function getProjectById(projectId: string) {
-  if (!db) {
+  if (!projectId || !db) {
     throw new Error("Firebase Firestore não está configurado.");
   }
 

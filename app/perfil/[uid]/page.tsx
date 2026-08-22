@@ -41,7 +41,27 @@ export default function ProfilePage({ params }: { params: { uid: string } }) {
           getPublicUserProfile(params.uid),
           fetchUserProjects(params.uid),
         ]);
-        setProfile(profileData);
+        let publicProfile = profileData;
+
+        if (!publicProfile && auth?.currentUser?.uid === params.uid) {
+          const privateProfile = await getUserProfile(params.uid);
+          if (privateProfile) {
+            publicProfile = {
+              uid: privateProfile.uid,
+              username: privateProfile.username || "usuario",
+              displayName: privateProfile.displayName || "Usuário",
+              bio: privateProfile.bio || "",
+              avatarUrl: privateProfile.avatarUrl || "",
+              githubUrl: privateProfile.githubUrl || "",
+              telegramUrl: privateProfile.telegramUrl || "",
+              xdaUrl: privateProfile.xdaUrl || "",
+              devices: privateProfile.devices || [],
+              badges: privateProfile.badges || [],
+            };
+          }
+        }
+
+        setProfile(publicProfile);
         setProjects(projectList as ProfileProject[]);
 
         if (auth?.currentUser?.uid === params.uid) {

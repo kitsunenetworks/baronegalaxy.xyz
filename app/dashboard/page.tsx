@@ -115,7 +115,7 @@ export default function DashboardPage() {
       <nav className="dashboard-tabs mb-8 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-zinc-900/60 p-2" aria-label="Navegação do painel">
         <a href="#minhas-postagens" className="dashboard-tab dashboard-tab--active rounded-xl px-4 py-2 text-sm font-medium">Minhas postagens</a>
         <a href="#comunidade" className="dashboard-tab rounded-xl px-4 py-2 text-sm font-medium">Comunidade</a>
-        <Link href={`/perfil/${profile?.uid}`} className="dashboard-tab rounded-xl px-4 py-2 text-sm font-medium">Ver perfil</Link>
+        {auth?.currentUser && <Link href={`/perfil/${auth.currentUser.uid}`} className="dashboard-tab rounded-xl px-4 py-2 text-sm font-medium">Ver perfil</Link>}
         <Link href="/dashboard/perfil" className="dashboard-tab rounded-xl px-4 py-2 text-sm font-medium">Configurações</Link>
         <Link href="/dashboard/new" className="dashboard-tab dashboard-tab--action ml-auto inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium"><PencilLine className="h-4 w-4" /> Nova publicação</Link>
       </nav>

@@ -58,7 +58,7 @@ export default function Navbar() {
         <nav className="site-nav__links" aria-label="Navegação principal">
           <Link href="/#feed">Explorar</Link>
           {user && <Link href="/dashboard#postagens">Postagens</Link>}
-          {user && <Link href="/dashboard#perfil">Meu perfil</Link>}
+          {user && <Link href="/dashboard/perfil">Meu perfil</Link>}
         </nav>
 
         <div className="site-nav__actions">

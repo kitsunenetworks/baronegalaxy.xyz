@@ -212,7 +212,7 @@ export async function updateUserProfile(uid: string, updates: Partial<AppUserPro
 }
 
 export async function getPublicUserProfile(uid: string) {
-  if (!isFirebaseConfigured || !db) return null;
+  if (!uid || !isFirebaseConfigured || !db) return null;
   const snapshot = await getDoc(doc(db, "publicProfiles", uid));
   return snapshot.exists() ? (snapshot.data() as Pick<AppUserProfile, "uid" | "username" | "displayName" | "bio" | "avatarUrl" | "githubUrl" | "telegramUrl" | "xdaUrl" | "devices" | "badges">) : null;
 }
