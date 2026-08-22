@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ImagePlus, UploadCloud } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
 import { createProject, uploadProjectCover } from "@/lib/projects";
 
@@ -32,9 +33,11 @@ export default function NewProjectPage() {
       return;
     }
 
-    if (!auth?.currentUser) {
-      router.push("/login");
-    }
+    const unsubscribe = onAuthStateChanged(auth!, (currentUser) => {
+      if (!currentUser) router.push("/login");
+    });
+
+    return unsubscribe;
   }, [router]);
 
   const handleSubmit = async () => {

@@ -3,6 +3,8 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  browserLocalPersistence,
+  setPersistence,
   type User,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -48,8 +50,13 @@ function ensureFirebaseReady() {
   }
 }
 
-export async function signUpWithEmail(email: string, password: string) {
+async function preparePersistentSession() {
   ensureFirebaseReady();
+  await setPersistence(auth!, browserLocalPersistence);
+}
+
+export async function signUpWithEmail(email: string, password: string) {
+  await preparePersistentSession();
   const currentAuth = auth!;
   const currentDb = db!;
   const credential = await createUserWithEmailAndPassword(currentAuth, email, password);
@@ -76,7 +83,7 @@ export async function signUpWithEmail(email: string, password: string) {
 }
 
 export async function signInWithEmail(email: string, password: string) {
-  ensureFirebaseReady();
+  await preparePersistentSession();
   const currentAuth = auth!;
   const currentDb = db!;
   const credential = await signInWithEmailAndPassword(currentAuth, email, password);
@@ -97,7 +104,7 @@ export async function signInWithEmail(email: string, password: string) {
 }
 
 export async function signInWithGoogle() {
-  ensureFirebaseReady();
+  await preparePersistentSession();
   const currentAuth = auth!;
   const currentDb = db!;
   const credential = await signInWithPopup(currentAuth, googleProvider);

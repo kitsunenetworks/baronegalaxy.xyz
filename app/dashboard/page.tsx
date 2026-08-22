@@ -5,6 +5,7 @@ import { ArrowRight, BarChart3, Camera, PencilLine, ShieldCheck, UserCircle2 } f
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { getUserProfile, updateUserProfile, type AppUserProfile } from "@/lib/auth";
 import { fetchUserProjects } from "@/lib/projects";
 
@@ -25,13 +26,17 @@ export default function DashboardPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const loadDashboard = async () => {
+    if (!isFirebaseConfigured || !auth) {
+      router.push("/login");
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!isFirebaseConfigured || !auth) {
         router.push("/login");
         return;
       }
 
-      const currentUser = auth.currentUser;
       if (!currentUser) {
         router.push("/login");
         return;
@@ -60,9 +65,9 @@ export default function DashboardPage() {
       } finally {
         setLoading(false);
       }
-    };
+    });
 
-    loadDashboard();
+    return unsubscribe;
   }, [router]);
 
   const stats = [

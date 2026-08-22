@@ -121,7 +121,7 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <a href="/dashboard/new" className="rounded-full bg-violet-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-400">
+              <a href="/login" className="rounded-full bg-violet-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-400">
                 Publicar projeto
               </a>
               <a href="#feed" className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-zinc-100 transition hover:border-violet-500/40 hover:text-violet-200">
