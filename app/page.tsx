@@ -197,6 +197,8 @@ export default function Home() {
                     <div className="flex flex-1 flex-col justify-between p-5 md:p-6">
                       <div>
                         <div className="mb-3 flex flex-wrap gap-2">
+                          {project.category && <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-200">{project.category}</span>}
+                          {project.buildStatus && <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-emerald-200">{project.buildStatus}</span>}
                           {(project.tags || []).map((tag: string) => (
                             <span key={tag} className="rounded-full border border-violet-500/25 bg-violet-500/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-violet-200">
                               {tag}
@@ -205,6 +207,7 @@ export default function Home() {
                         </div>
 
                         <h3 className="text-xl font-semibold text-white md:text-2xl">{project.title}</h3>
+                        <p className="mt-2 font-mono text-xs text-cyan-200/80">{project.deviceCodename || "generic"}{project.androidVersion ? ` • ${project.androidVersion}` : ""}</p>
                         <div className="mt-3 flex items-center gap-3 text-sm text-zinc-400">
                           <a href={`/perfil/${project.authorId}`} className="transition hover:text-violet-200">
                             {project.authorName || "Usuário"}

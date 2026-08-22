@@ -21,6 +21,18 @@ export type ProjectData = {
   tags: string[];
   authorId: string;
   authorName: string;
+  category: string;
+  deviceCodename: string;
+  androidVersion: string;
+  buildStatus: "Stable" | "Beta" | "Nightly" | "Experimento" | "Discontinued";
+  recovery: string;
+  firmware: string;
+  selinux: "Enforcing" | "Permissive" | "Unknown";
+  downloadUrl?: string;
+  sourceUrl?: string;
+  xdaUrl?: string;
+  changelog?: string;
+  thanksCount?: number;
   coverImage?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -40,6 +52,7 @@ export async function createProject(project: Omit<ProjectData, "id" | "createdAt
     tags: project.tags ?? [],
     likesCount: 0,
     commentsCount: 0,
+    thanksCount: 0,
     status: project.status ?? "published",
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -164,6 +177,7 @@ export async function addComment(
     userName: string;
     text: string;
     isOP?: boolean;
+    parentId?: string;
   },
 ) {
   if (!db) {
@@ -186,6 +200,7 @@ export async function addComment(
       userName: payload.userName,
       text: payload.text.trim(),
       isOP: Boolean(payload.isOP),
+      parentId: payload.parentId ?? null,
       createdAt: serverTimestamp(),
     });
     transaction.update(projectRef, {
@@ -195,6 +210,33 @@ export async function addComment(
   });
 
   return commentRef.id;
+}
+
+export async function toggleProjectThanks(projectId: string, userId: string) {
+  if (!db) {
+    throw new Error("Firebase Firestore não está configurado.");
+  }
+
+  const currentDb = db;
+  const projectRef = doc(currentDb, "projects", projectId);
+  const thanksRef = doc(currentDb, "projects", projectId, "thanks", userId);
+
+  return runTransaction(currentDb, async (transaction) => {
+    const [projectSnapshot, thanksSnapshot] = await Promise.all([
+      transaction.get(projectRef),
+      transaction.get(thanksRef),
+    ]);
+
+    if (!projectSnapshot.exists()) throw new Error("Projeto não encontrado.");
+    const currentThanks = Number(projectSnapshot.data().thanksCount ?? 0);
+    const nextThanks = thanksSnapshot.exists() ? Math.max(0, currentThanks - 1) : currentThanks + 1;
+
+    if (thanksSnapshot.exists()) transaction.delete(thanksRef);
+    else transaction.set(thanksRef, { userId, createdAt: serverTimestamp() });
+
+    transaction.update(projectRef, { thanksCount: nextThanks, updatedAt: serverTimestamp() });
+    return { thanked: !thanksSnapshot.exists(), thanksCount: nextThanks };
+  });
 }
 
 export async function toggleProjectLike(projectId: string, userId: string) {

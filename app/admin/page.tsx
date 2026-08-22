@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Ban, CheckCircle2, FileText, ShieldAlert, Users } from "lucide-react";
 import { collection, doc, getDocs, serverTimestamp, updateDoc } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
+import { getUserProfile } from "@/lib/auth";
 import { hideProject } from "@/lib/projects";
 
 type ModerationItem = {
@@ -26,10 +27,12 @@ export default function AdminPage() {
   const [usersCount, setUsersCount] = useState(0);
   const [projectsCount, setProjectsCount] = useState(0);
   const [moderationQueue, setModerationQueue] = useState<ModerationItem[]>([]);
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
     const loadAdminData = async () => {
-      if (!isFirebaseConfigured || !db) {
+      if (!isFirebaseConfigured || !db || !auth?.currentUser) {
+        setAuthorized(false);
         setModerationQueue([]);
         setUsersCount(0);
         setProjectsCount(0);
@@ -37,6 +40,12 @@ export default function AdminPage() {
       }
 
       try {
+        const profile = await getUserProfile(auth.currentUser.uid);
+        if (profile?.role !== "owner") {
+          setAuthorized(false);
+          return;
+        }
+        setAuthorized(true);
         const [usersSnapshot, projectsSnapshot] = await Promise.all([
           getDocs(collection(db, "users")),
           getDocs(collection(db, "projects")),
@@ -74,6 +83,17 @@ export default function AdminPage() {
     ],
     [moderationQueue.length, projectsCount, usersCount],
   );
+
+  if (authorized === false) {
+    return (
+      <main className="mx-auto max-w-6xl px-4 py-16 text-center text-zinc-50">
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-8">
+          <h1 className="text-2xl font-semibold">Acesso restrito</h1>
+          <p className="mt-2 text-sm text-red-100/80">A área administrativa exige uma conta com função owner.</p>
+        </div>
+      </main>
+    );
+  }
 
   const handleApprove = async (projectId: string) => {
     if (!db) return;

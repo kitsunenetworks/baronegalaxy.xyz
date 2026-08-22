@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowBigUpDash, Heart, MessageSquareText, Send, ShieldCheck, Star } from "lucide-react";
+import { ArrowBigUpDash, Heart, MessageSquareText, Reply, Send, ShieldCheck, Star, ThumbsUp } from "lucide-react";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
-import { addComment, fetchComments, getProjectById, toggleProjectLike, type ProjectData } from "@/lib/projects";
+import { addComment, fetchComments, getProjectById, toggleProjectLike, toggleProjectThanks, type ProjectData } from "@/lib/projects";
 
 type ProjectRecord = ProjectData & { id: string };
 type CommentRecord = {
@@ -12,6 +12,7 @@ type CommentRecord = {
   userName: string;
   text: string;
   isOP?: boolean;
+  parentId?: string | null;
   createdAt?: unknown;
 };
 
@@ -39,6 +40,10 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [liking, setLiking] = useState(false);
+  const [thanked, setThanked] = useState(false);
+  const [thanksCount, setThanksCount] = useState(0);
+  const [thanking, setThanking] = useState(false);
+  const [replyTo, setReplyTo] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -54,6 +59,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         setProject(projectData as ProjectRecord | null);
         setComments(commentList as CommentRecord[]);
         setLikesCount(Number((projectData as ProjectRecord | null)?.likesCount ?? 0));
+        setThanksCount(Number((projectData as ProjectRecord | null)?.thanksCount ?? 0));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Não foi possível carregar o projeto.");
       } finally {
@@ -84,15 +90,36 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         userName: auth.currentUser.displayName || auth.currentUser.email || "Usuário",
         text: message,
         isOP: Boolean(project && auth.currentUser.uid === project.authorId),
+        parentId: replyTo ?? undefined,
       });
 
       const nextComments = await fetchComments(projectId);
       setComments(nextComments as CommentRecord[]);
       setMessage("");
+      setReplyTo(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível enviar o comentário.");
     } finally {
       setPosting(false);
+    }
+  };
+
+  const handleThanks = async () => {
+    if (!auth?.currentUser) {
+      setError("Você precisa entrar para agradecer ao autor.");
+      return;
+    }
+
+    setThanking(true);
+    setError("");
+    try {
+      const result = await toggleProjectThanks(projectId, auth.currentUser.uid);
+      setThanked(result.thanked);
+      setThanksCount(result.thanksCount);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível atualizar o agradecimento.");
+    } finally {
+      setThanking(false);
     }
   };
 
@@ -147,6 +174,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 
         <div className="p-6 md:p-8">
           <div className="mb-4 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.18em] text-violet-300">
+            {project.category && <span className="text-cyan-200">{project.category}</span>}
+            {project.buildStatus && <span className="text-emerald-200">{project.buildStatus}</span>}
             {(project.tags || []).map((tag: string) => (
               <span key={tag}>{tag}</span>
             ))}
@@ -194,6 +223,27 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <p>{project.summary}</p>
           </div>
 
+          <div className="mt-8 grid gap-4 border-t border-white/10 pt-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Dispositivo</p><p className="mt-1 font-mono text-sm text-cyan-200">{project.deviceCodename || "generic"}</p></div>
+            <div><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Android</p><p className="mt-1 text-sm text-zinc-200">{project.androidVersion || "Não informado"}</p></div>
+            <div><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Recovery</p><p className="mt-1 text-sm text-zinc-200">{project.recovery || "Não informado"}</p></div>
+            <div><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">SELinux</p><p className="mt-1 text-sm text-zinc-200">{project.selinux || "Unknown"}</p></div>
+          </div>
+
+          {project.firmware && <p className="mt-4 text-sm text-zinc-400">Firmware mínimo: <span className="text-zinc-200">{project.firmware}</span></p>}
+
+          {(project.downloadUrl || project.sourceUrl || project.xdaUrl || project.changelog) && (
+            <div className="mt-6 rounded-2xl border border-white/10 bg-zinc-950/50 p-4">
+              <p className="text-sm font-medium text-zinc-200">Recursos da build</p>
+              <div className="mt-3 flex flex-wrap gap-3 text-sm">
+                {project.downloadUrl && <a href={project.downloadUrl} target="_blank" rel="noreferrer" className="text-violet-200 hover:underline">Download</a>}
+                {project.sourceUrl && <a href={project.sourceUrl} target="_blank" rel="noreferrer" className="text-violet-200 hover:underline">Código-fonte</a>}
+                {project.xdaUrl && <a href={project.xdaUrl} target="_blank" rel="noreferrer" className="text-violet-200 hover:underline">Thread XDA</a>}
+              </div>
+              {project.changelog && <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-zinc-400">{project.changelog}</p>}
+            </div>
+          )}
+
           <button
             onClick={handleLike}
             disabled={liking}
@@ -201,6 +251,14 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           >
             <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
             {liking ? "Atualizando..." : liked ? "Curtido" : "Curtir projeto"}
+          </button>
+          <button
+            onClick={handleThanks}
+            disabled={thanking}
+            className={`ml-2 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${thanked ? "border-cyan-400/50 bg-cyan-400/15 text-cyan-200" : "border-white/10 bg-white/5 text-zinc-200 hover:border-cyan-400/40 hover:text-cyan-200"}`}
+          >
+            <ThumbsUp className="h-4 w-4" />
+            {thanking ? "Atualizando..." : `Agradecer (${thanksCount})`}
           </button>
         </div>
       </article>
@@ -224,6 +282,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             placeholder="Compartilhe sua dúvida ou feedback..."
             className="w-full resize-none rounded-2xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-zinc-100 outline-none focus:border-violet-500/70"
           />
+          {replyTo && <p className="px-4 pt-2 text-xs text-cyan-200">Respondendo a um comentário <button onClick={() => setReplyTo(null)} className="ml-2 underline">cancelar</button></p>}
           <div className="mt-3 flex justify-end">
             <button
               onClick={handleSubmitComment}
@@ -243,7 +302,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             </div>
           ) : (
             comments.map((comment) => (
-              <div key={comment.id} className="rounded-2xl border border-white/10 bg-zinc-950/70 p-4">
+              <div key={comment.id} className={`rounded-2xl border border-white/10 bg-zinc-950/70 p-4 ${comment.parentId ? "ml-6 border-cyan-400/15" : ""}`}>
                 <div className="mb-2 flex items-center gap-2">
                   <span className="text-sm font-medium text-zinc-100">{comment.userName || comment.userId}</span>
                   {comment.isOP && (
@@ -253,6 +312,9 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                   )}
                 </div>
                 <p className="text-sm leading-7 text-zinc-300">{comment.text}</p>
+                <button onClick={() => setReplyTo(comment.id)} className="mt-3 inline-flex items-center gap-1.5 text-xs text-cyan-200 hover:text-cyan-100">
+                  <Reply className="h-3.5 w-3.5" /> Responder
+                </button>
               </div>
             ))
           )}
