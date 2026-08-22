@@ -102,13 +102,6 @@ export default function DashboardPage() {
           <p className="text-sm uppercase tracking-[0.2em] text-violet-400">Dashboard</p>
           <h1 className="mt-2 text-3xl font-semibold">Bem-vindo, {profile?.displayName ?? "Usuário"}</h1>
         </div>
-        <Link
-          href="/dashboard/new"
-          className="inline-flex items-center gap-2 rounded-full border border-violet-500/40 bg-violet-500/10 px-4 py-2 text-sm font-medium text-violet-200 transition hover:bg-violet-500/20"
-        >
-          <PencilLine className="h-4 w-4" />
-          Criar Novo Projeto
-        </Link>
       </div>
 
       <nav className="mb-8 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-zinc-900/60 p-2" aria-label="Navegação do painel">
