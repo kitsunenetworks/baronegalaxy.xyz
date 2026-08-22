@@ -136,6 +136,20 @@ textarea {
 .site-nav__logout svg { width: 15px; }
 .site-nav__logout:hover { color: #fca5a5; }
 .site-nav__login:hover, .site-nav__publish:hover { background: #a78bfa; }
+.dashboard-page { position: relative; }
+.dashboard-page::before { content: ""; position: absolute; z-index: -1; top: -120px; left: 12%; width: 420px; height: 260px; border-radius: 50%; background: rgba(124, 58, 237, .12); filter: blur(80px); pointer-events: none; }
+.dashboard-heading { animation: rise-in 500ms ease-out both; }
+.dashboard-tabs { box-shadow: inset 0 1px rgba(255,255,255,.04); }
+.dashboard-tab { color: #a1a1aa; transition: color 180ms ease, background 180ms ease, border-color 180ms ease; }
+.dashboard-tab:hover { color: #fff; background: rgba(255,255,255,.06); }
+.dashboard-tab--active { background: rgba(139,92,246,.16); color: #ddd6fe; }
+.dashboard-tab--action { border: 1px solid rgba(103,232,249,.25); background: rgba(34,211,238,.1); color: #a5f3fc; }
+.dashboard-stat { transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
+.dashboard-stat:hover { transform: translateY(-2px); border-color: rgba(167,139,250,.35); background: rgba(255,255,255,.08); }
+.dashboard-posts { box-shadow: 0 20px 60px rgba(0,0,0,.16); }
+.dashboard-empty { background: radial-gradient(circle at 50% 0, rgba(139,92,246,.12), transparent 55%), rgba(139,92,246,.04); }
+.dashboard-loading { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
 .site-profile-menu { position: relative; }
 .site-profile-popover { position: absolute; right: 0; top: calc(100% + 10px); width: 280px; padding: 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: rgba(12, 18, 34, .98); box-shadow: 0 18px 45px rgba(0,0,0,.4); }
 .site-profile-popover__heading { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,.08); }
