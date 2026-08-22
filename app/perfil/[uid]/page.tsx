@@ -83,7 +83,7 @@ export default function ProfilePage({ params }: { params: { uid: string } }) {
             <p className="mt-2 text-sm text-cyan-200">@{profile.username || "usuario"}</p>
             <p className="mt-1 text-xs uppercase tracking-[0.16em] text-zinc-500">{role === "owner" ? "Owner" : "Membro"}</p>
           </div>
-          {isOwnProfile && <Link href="/dashboard#perfil" className="rounded-full border border-violet-400/30 px-4 py-2 text-sm text-violet-200 transition hover:bg-violet-500/10">Editar perfil</Link>}
+          {isOwnProfile && <Link href="/dashboard/perfil" className="rounded-full border border-violet-400/30 px-4 py-2 text-sm text-violet-200 transition hover:bg-violet-500/10">Editar perfil</Link>}
         </div>
         {profile.bio && <p className="mt-6 max-w-2xl leading-7 text-zinc-300">{profile.bio}</p>}
         {(profile.devices?.length > 0 || profile.badges?.length > 0) && (

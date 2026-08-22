@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LogOut, Plus, UserCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,8 @@ export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<AppUserProfile | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !auth) return;
@@ -24,6 +26,17 @@ export default function Navbar() {
       setUser(currentUser);
       setProfile(currentUser ? await getUserProfile(currentUser.uid) : null);
     });
+  }, []);
+
+  useEffect(() => {
+    const closeProfileMenu = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", closeProfileMenu);
+    return () => document.removeEventListener("mousedown", closeProfileMenu);
   }, []);
 
   const handleLogout = async () => {
@@ -51,13 +64,29 @@ export default function Navbar() {
         <div className="site-nav__actions">
           {user ? (
             <>
-              <Link href={`/perfil/${user.uid}`} className="site-account">
-                <span className="site-account__avatar"><UserCircle2 /></span>
-                <span className="site-account__copy">
-                  <strong>@{profile?.username || "usuario"}</strong>
-                  <small>{roleLabel(profile?.role)}</small>
-                </span>
-              </Link>
+              <div ref={profileMenuRef} className="site-profile-menu">
+                <button onClick={() => setProfileOpen((open) => !open)} className="site-account" aria-expanded={profileOpen} aria-label="Abrir informações do perfil">
+                  <span className="site-account__avatar"><UserCircle2 /></span>
+                  <span className="site-account__copy">
+                    <strong>@{profile?.username || "usuario"}</strong>
+                    <small>{roleLabel(profile?.role)}</small>
+                  </span>
+                </button>
+                {profileOpen && (
+                  <div className="site-profile-popover">
+                    <div className="site-profile-popover__heading">
+                      <span className="site-account__avatar"><UserCircle2 /></span>
+                      <div><strong>{profile?.displayName || "Usuário"}</strong><small>@{profile?.username || "usuario"}</small></div>
+                    </div>
+                    <div className="site-profile-popover__details">
+                      <span><b>Cargo</b>{roleLabel(profile?.role)}</span>
+                      <span><b>Email</b>{user.email || "Conta Google"}</span>
+                    </div>
+                    <Link href={`/perfil/${user.uid}`} onClick={() => setProfileOpen(false)} className="site-profile-popover__link">Ver perfil público</Link>
+                    <Link href="/dashboard/perfil" onClick={() => setProfileOpen(false)} className="site-profile-popover__link">Gerenciar perfil</Link>
+                  </div>
+                )}
+              </div>
               <Link href="/dashboard/new" className="site-nav__publish" title="Criar nova postagem">
                 <Plus /> <span>Postar</span>
               </Link>

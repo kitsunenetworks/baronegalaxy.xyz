@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, BarChart3, Camera, PencilLine, ShieldCheck, UserCircle2 } from "lucide-react";
+import { ArrowRight, BarChart3, PencilLine, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { getUserProfile, updateUserProfile, type AppUserProfile } from "@/lib/auth";
+import { getUserProfile, type AppUserProfile } from "@/lib/auth";
 import { fetchUserProjects } from "@/lib/projects";
 
 type ProjectSummary = {
@@ -21,16 +21,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<AppUserProfile | null>(null);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
-  const [bio, setBio] = useState("");
-  const [username, setUsername] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [githubUrl, setGithubUrl] = useState("");
-  const [telegramUrl, setTelegramUrl] = useState("");
-  const [xdaUrl, setXdaUrl] = useState("");
-  const [devices, setDevices] = useState("");
-  const [profileMessage, setProfileMessage] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !auth) {
@@ -71,13 +62,6 @@ export default function DashboardPage() {
         };
 
         setProfile(nextProfile);
-        setBio(nextProfile.bio ?? "");
-        setUsername(nextProfile.username ?? "usuario");
-        setDisplayName(nextProfile.displayName ?? "Usuário");
-        setGithubUrl(nextProfile.githubUrl ?? "");
-        setTelegramUrl(nextProfile.telegramUrl ?? "");
-        setXdaUrl(nextProfile.xdaUrl ?? "");
-        setDevices((nextProfile.devices ?? []).join(", "));
         setProjects(userProjects as ProjectSummary[]);
       } catch (error) {
         console.error(error);
@@ -100,39 +84,6 @@ export default function DashboardPage() {
       value: String(projects.reduce((sum, item) => sum + (item.likesCount ?? 0), 0)),
     },
   ];
-
-  const handleSaveProfile = async () => {
-    if (!auth?.currentUser || !profile) return;
-
-    setSaving(true);
-    setProfileMessage("");
-
-    try {
-      const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
-      if (cleanUsername.length < 3) {
-        setProfileMessage("O nome de usuário precisa ter pelo menos 3 caracteres.");
-        return;
-      }
-
-      const cleanDevices = devices.split(",").map((device) => device.trim()).filter(Boolean).slice(0, 10);
-      await updateUserProfile(auth.currentUser.uid, {
-        ...profile,
-        bio,
-        username: cleanUsername,
-        displayName: displayName.trim() || "Usuário",
-        githubUrl: githubUrl.trim(),
-        telegramUrl: telegramUrl.trim(),
-        xdaUrl: xdaUrl.trim(),
-        devices: cleanDevices,
-      });
-
-      setProfile((current) => (current ? { ...current, bio, username: cleanUsername, displayName: displayName.trim() || "Usuário", githubUrl: githubUrl.trim(), telegramUrl: telegramUrl.trim(), xdaUrl: xdaUrl.trim(), devices: cleanDevices } : current));
-      setUsername(cleanUsername);
-      setProfileMessage("Perfil atualizado com sucesso.");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -161,8 +112,8 @@ export default function DashboardPage() {
       </div>
 
       <nav className="mb-8 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-zinc-900/60 p-2" aria-label="Navegação do painel">
-        <a href="#perfil" className="rounded-xl bg-violet-500/15 px-4 py-2 text-sm font-medium text-violet-200 transition hover:bg-violet-500/25">Meu perfil</a>
-        <a href="#postagens" className="rounded-xl px-4 py-2 text-sm text-zinc-400 transition hover:bg-white/5 hover:text-white">Minhas postagens</a>
+        <a href="#postagens" className="rounded-xl bg-violet-500/15 px-4 py-2 text-sm font-medium text-violet-200 transition hover:bg-violet-500/25">Minhas postagens</a>
+        <Link href={`/perfil/${profile?.uid}`} className="rounded-xl px-4 py-2 text-sm text-zinc-400 transition hover:bg-white/5 hover:text-white">Ver perfil</Link>
         <Link href="/dashboard/new" className="ml-auto inline-flex items-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-200 transition hover:bg-cyan-400/20"><PencilLine className="h-4 w-4" /> Nova publicação</Link>
       </nav>
 
@@ -179,75 +130,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div id="perfil" className="rounded-3xl border border-white/10 bg-zinc-900/70 p-6">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/20 text-violet-200">
-              <UserCircle2 className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-lg font-medium">Perfil público</p>
-              <p className="text-sm text-zinc-400">Atualize sua bio e imagem</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-dashed border-violet-500/40 bg-violet-500/5 p-6 text-center">
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-violet-500/15 text-violet-200">
-                <Camera className="h-6 w-6" />
-              </div>
-              <p className="text-lg font-semibold text-zinc-100">@{profile?.username ?? "usuario"}</p>
-              <p className="mt-1 text-sm text-zinc-400">{profile?.email ?? "Conta Firebase"}</p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-2 block text-sm text-zinc-400">Nome de usuário</span>
-                <input value={username} onChange={(event) => setUsername(event.target.value)} placeholder="seu_nome" maxLength={30} className="w-full rounded-2xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-200 outline-none transition focus:border-violet-500/70" />
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm text-zinc-400">Nome público</span>
-                <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Seu nome ou alias" maxLength={60} className="w-full rounded-2xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-200 outline-none transition focus:border-violet-500/70" />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className="mb-2 block text-sm text-zinc-400">Bio</span>
-              <textarea
-                rows={5}
-                value={bio}
-                onChange={(event) => setBio(event.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-200 outline-none ring-0 transition focus:border-violet-500/70"
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-2 block text-sm text-zinc-400">Dispositivos</span>
-              <input value={devices} onChange={(event) => setDevices(event.target.value)} placeholder="POCO F3, Redmi Note 4" className="w-full rounded-2xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-200 outline-none transition focus:border-violet-500/70" />
-            </label>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <input value={githubUrl} onChange={(event) => setGithubUrl(event.target.value)} placeholder="GitHub URL" className="rounded-2xl border border-white/10 bg-zinc-950/60 px-3 py-3 text-sm text-zinc-200 outline-none focus:border-violet-500/70" />
-              <input value={telegramUrl} onChange={(event) => setTelegramUrl(event.target.value)} placeholder="Telegram URL" className="rounded-2xl border border-white/10 bg-zinc-950/60 px-3 py-3 text-sm text-zinc-200 outline-none focus:border-violet-500/70" />
-              <input value={xdaUrl} onChange={(event) => setXdaUrl(event.target.value)} placeholder="XDA URL" className="rounded-2xl border border-white/10 bg-zinc-950/60 px-3 py-3 text-sm text-zinc-200 outline-none focus:border-violet-500/70" />
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {(profile?.badges?.length ? profile.badges : ["Membro"]).map((badge) => <span key={badge} className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-200">{badge}</span>)}
-            </div>
-
-            {profileMessage && <p className={`text-sm ${profileMessage.includes("sucesso") ? "text-emerald-300" : "text-amber-200"}`}>{profileMessage}</p>}
-
-            <button
-              onClick={handleSaveProfile}
-              disabled={saving}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-violet-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-400 disabled:opacity-60"
-            >
-              {saving ? "Salvando..." : "Salvar perfil"}
-            </button>
-          </div>
-        </div>
-
-        <div id="postagens" className="rounded-3xl border border-white/10 bg-zinc-900/70 p-6">
+        <div id="postagens" className="rounded-3xl border border-white/10 bg-zinc-900/70 p-6 lg:col-span-2">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-200">
               <ShieldCheck className="h-6 w-6" />
