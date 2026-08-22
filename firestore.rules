@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read: if isSelf(userId) || isOwner();
+      allow create: if isSelf(userId) &&
+        request.resource.data.uid == userId &&
+        request.resource.data.role == 'user';
+      allow update: if isOwner() ||
+        (isSelf(userId) &&
+          request.resource.data.uid == resource.data.uid &&
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'bio', 'avatarUrl', 'updatedAt']));
+      allow delete: if isOwner();
+    }
+
+    match /publicProfiles/{userId} {
+      allow read: if true;
+      allow create: if isSelf(userId) &&
+        request.resource.data.uid == userId &&
+        request.resource.data.displayName is string &&
+        request.resource.data.bio is string &&
+        request.resource.data.avatarUrl is string;
+      allow update: if isSelf(userId) &&
+        request.resource.data.uid == resource.data.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid', 'displayName', 'bio', 'avatarUrl', 'updatedAt']);
+      allow delete: if isOwner() || isSelf(userId);
+    }
+
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create: if isSignedIn() &&
+        request.resource.data.authorId == request.auth.uid &&
+        request.resource.data.title is string && request.resource.data.title.size() > 0 &&
+        request.resource.data.title.size() <= 120 &&
+        request.resource.data.summary is string && request.resource.data.summary.size() <= 5000 &&
+        request.resource.data.tags is list && request.resource.data.tags.size() <= 15 &&
+        request.resource.data.likesCount == 0 &&
+        request.resource.data.commentsCount == 0 &&
+        request.resource.data.status in ['published', 'hidden', 'draft'];
+      allow update: if isOwner() ||
+        (isSignedIn() && resource.data.authorId == request.auth.uid &&
+          request.resource.data.authorId == resource.data.authorId &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'summary', 'tags', 'coverImage', 'status', 'updatedAt'])) ||
+        (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'updatedAt']) &&
+          request.resource.data.likesCount == resource.data.likesCount + 1 &&
+          getAfter(/databases/$(database)/documents/projects/$(projectId)/likes/$(request.auth.uid)).data.userId == request.auth.uid) ||
+        (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'updatedAt']) &&
+          request.resource.data.likesCount == resource.data.likesCount - 1 &&
+          !exists(/databases/$(database)/documents/projects/$(projectId)/likes/$(request.auth.uid))) ||
+        (isSignedIn() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentsCount', 'updatedAt']) &&
+          request.resource.data.commentsCount == resource.data.commentsCount + 1);
+      allow delete: if isOwner() || (isSignedIn() && resource.data.authorId == request.auth.uid);
+
+      match /likes/{userId} {
+        allow read: if isSelf(userId);
+        allow create: if isSelf(userId) && request.resource.data.userId == userId;
+        allow delete: if isSelf(userId);
+      }
+    }
+
+    match /projects/{projectId}/comments/{commentId} {
+      allow read: if true;
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.text is string &&
+        request.resource.data.text.size() > 0 &&
+        request.resource.data.text.size() <= 2000;
+      allow update, delete: if isOwner() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    match /{document=**} {
+      allow read: if false;
+      allow write: if isOwner();
+    }
+  }
+}
