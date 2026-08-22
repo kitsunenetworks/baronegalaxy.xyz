@@ -25,6 +25,7 @@ export default function ProfilePage({ params }: { params: { uid: string } }) {
   const [projects, setProjects] = useState<ProfileProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [projectsError, setProjectsError] = useState("");
   const [role, setRole] = useState<AppUserProfile["role"]>("user");
   const [isOwnProfile, setIsOwnProfile] = useState(false);
 
@@ -37,11 +38,7 @@ export default function ProfilePage({ params }: { params: { uid: string } }) {
       }
 
       try {
-        const [profileData, projectList] = await Promise.all([
-          getPublicUserProfile(params.uid),
-          fetchUserProjects(params.uid),
-        ]);
-        let publicProfile = profileData;
+        let publicProfile = await getPublicUserProfile(params.uid);
 
         if (!publicProfile && auth?.currentUser?.uid === params.uid) {
           const privateProfile = await getUserProfile(params.uid);
@@ -61,16 +58,55 @@ export default function ProfilePage({ params }: { params: { uid: string } }) {
           }
         }
 
-        setProfile(publicProfile);
-        setProjects(projectList as ProfileProject[]);
-
         if (auth?.currentUser?.uid === params.uid) {
           const privateProfile = await getUserProfile(params.uid);
           setRole(privateProfile?.role ?? "user");
           setIsOwnProfile(true);
         }
+
+        if (!publicProfile && auth?.currentUser?.uid === params.uid && auth.currentUser) {
+          publicProfile = {
+            uid: auth.currentUser.uid,
+            username: "usuario",
+            displayName: auth.currentUser.displayName || "Usuário",
+            bio: "",
+            avatarUrl: auth.currentUser.photoURL || "",
+            githubUrl: "",
+            telegramUrl: "",
+            xdaUrl: "",
+            devices: [],
+            badges: [],
+          };
+        }
+
+        setProfile(publicProfile);
+
+        try {
+          const projectList = await fetchUserProjects(params.uid);
+          setProjects(projectList as ProfileProject[]);
+        } catch (projectError) {
+          setProjects([]);
+          setProjectsError(projectError instanceof Error ? projectError.message : "As publicações não estão disponíveis agora.");
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Não foi possível carregar o perfil.");
+        if (auth?.currentUser?.uid === params.uid) {
+          setProfile({
+            uid: params.uid,
+            username: "usuario",
+            displayName: auth.currentUser.displayName || "Usuário",
+            bio: "",
+            avatarUrl: auth.currentUser.photoURL || "",
+            githubUrl: "",
+            telegramUrl: "",
+            xdaUrl: "",
+            devices: [],
+            badges: [],
+          });
+          setIsOwnProfile(true);
+          setError("");
+        } else {
+          setError(err instanceof Error ? err.message : "Não foi possível carregar o perfil.");
+        }
       } finally {
         setLoading(false);
       }
@@ -126,7 +162,7 @@ export default function ProfilePage({ params }: { params: { uid: string } }) {
         </aside>
         <div>
           <div className="mb-5 flex items-center justify-between"><div><p className="text-xs uppercase tracking-[0.2em] text-cyan-300/80">Atividade pública</p><h2 className="mt-1 text-2xl font-semibold">Projetos publicados</h2></div><span className="text-sm text-zinc-400">{projects.length} projetos</span></div>
-          {projects.length === 0 ? <div className="rounded-2xl border border-dashed border-violet-500/30 bg-violet-500/5 p-8 text-center text-zinc-300">Este usuário ainda não publicou projetos.</div> : <div className="space-y-4">{projects.map((project) => <Link key={project.id} href={`/projeto/${project.id}`} className="profile-project-card block rounded-2xl border border-white/10 bg-zinc-900/70 p-5 transition hover:border-violet-500/40"><div className="flex items-start justify-between gap-4"><div><div className="mb-2 flex flex-wrap gap-2">{project.category && <span className="text-xs text-cyan-200">{project.category}</span>}{project.buildStatus && <span className="text-xs text-emerald-200">{project.buildStatus}</span>}</div><h3 className="text-lg font-semibold">{project.title}</h3></div><ExternalLink className="h-4 w-4 shrink-0 text-violet-300" /></div><p className="mt-2 line-clamp-2 text-sm leading-6 text-zinc-400">{project.summary}</p><div className="mt-4 flex flex-wrap gap-4 text-xs text-zinc-500"><span className="font-mono text-cyan-200/70">{project.deviceCodename || "generic"}</span><span className="inline-flex items-center gap-1"><Heart className="h-3.5 w-3.5" />{project.likesCount ?? 0}</span><span className="inline-flex items-center gap-1"><MessageSquareText className="h-3.5 w-3.5" />{project.commentsCount ?? 0}</span></div></Link>)}</div>}
+          {projectsError ? <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-8 text-center text-sm text-amber-100">Perfil carregado. As publicações serão exibidas quando o Firestore estiver disponível.</div> : projects.length === 0 ? <div className="rounded-2xl border border-dashed border-violet-500/30 bg-violet-500/5 p-8 text-center text-zinc-300">Este usuário ainda não publicou projetos.</div> : <div className="space-y-4">{projects.map((project) => <Link key={project.id} href={`/projeto/${project.id}`} className="profile-project-card block rounded-2xl border border-white/10 bg-zinc-900/70 p-5 transition hover:border-violet-500/40"><div className="flex items-start justify-between gap-4"><div><div className="mb-2 flex flex-wrap gap-2">{project.category && <span className="text-xs text-cyan-200">{project.category}</span>}{project.buildStatus && <span className="text-xs text-emerald-200">{project.buildStatus}</span>}</div><h3 className="text-lg font-semibold">{project.title}</h3></div><ExternalLink className="h-4 w-4 shrink-0 text-violet-300" /></div><p className="mt-2 line-clamp-2 text-sm leading-6 text-zinc-400">{project.summary}</p><div className="mt-4 flex flex-wrap gap-4 text-xs text-zinc-500"><span className="font-mono text-cyan-200/70">{project.deviceCodename || "generic"}</span><span className="inline-flex items-center gap-1"><Heart className="h-3.5 w-3.5" />{project.likesCount ?? 0}</span><span className="inline-flex items-center gap-1"><MessageSquareText className="h-3.5 w-3.5" />{project.commentsCount ?? 0}</span></div></Link>)}</div>}
         </div>
       </section>
     </main>
