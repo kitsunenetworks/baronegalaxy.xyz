@@ -12,7 +12,13 @@ import {
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { db, firebaseConfigStatus } from "./firebase";
+
+function firestoreUnavailableError() {
+  return new Error(firebaseConfigStatus.missing.length > 0
+    ? `Firebase não foi configurado neste ambiente. Variáveis ausentes: ${firebaseConfigStatus.missing.join(", ")}.`
+    : "Firestore não está disponível neste momento.");
+}
 
 export type ProjectData = {
   id?: string;
@@ -43,7 +49,7 @@ export type ProjectData = {
 
 export async function createProject(project: Omit<ProjectData, "id" | "createdAt" | "updatedAt"> & { coverFile?: File | null }) {
   if (!db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;
@@ -63,7 +69,7 @@ export async function createProject(project: Omit<ProjectData, "id" | "createdAt
 
 export async function uploadProjectCover(file: File, projectId: string) {
   if (!db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;
@@ -108,7 +114,7 @@ function compressImage(file: File): Promise<string> {
 
 export async function fetchProjects() {
   if (!db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;
@@ -123,7 +129,7 @@ export async function fetchProjects() {
 
 export async function fetchUserProjects(uid: string) {
   if (!uid || !db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;
@@ -138,7 +144,7 @@ export async function fetchUserProjects(uid: string) {
 
 export async function getProjectById(projectId: string) {
   if (!projectId || !db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;
@@ -157,7 +163,7 @@ export async function getProjectById(projectId: string) {
 
 export async function fetchComments(projectId: string) {
   if (!db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;
@@ -181,7 +187,7 @@ export async function addComment(
   },
 ) {
   if (!db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;
@@ -214,7 +220,7 @@ export async function addComment(
 
 export async function toggleProjectThanks(projectId: string, userId: string) {
   if (!db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;
@@ -241,7 +247,7 @@ export async function toggleProjectThanks(projectId: string, userId: string) {
 
 export async function toggleProjectLike(projectId: string, userId: string) {
   if (!db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;
@@ -280,7 +286,7 @@ export async function toggleProjectLike(projectId: string, userId: string) {
 
 export async function hideProject(projectId: string) {
   if (!db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;
@@ -292,7 +298,7 @@ export async function hideProject(projectId: string) {
 
 export async function deleteProject(projectId: string) {
   if (!db) {
-    throw new Error("Firebase Firestore não está configurado.");
+    throw firestoreUnavailableError();
   }
 
   const currentDb = db;

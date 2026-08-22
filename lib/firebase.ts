@@ -19,6 +19,17 @@ export const isFirebaseConfigured = Boolean(
     firebaseConfig.appId,
 );
 
+export const firebaseConfigStatus = {
+  isConfigured: isFirebaseConfigured,
+  missing: [
+    !firebaseConfig.apiKey && "NEXT_PUBLIC_FIREBASE_API_KEY",
+    !firebaseConfig.authDomain && "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+    !firebaseConfig.projectId && "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
+    !firebaseConfig.messagingSenderId && "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
+    !firebaseConfig.appId && "NEXT_PUBLIC_FIREBASE_APP_ID",
+  ].filter((name): name is string => Boolean(name)),
+};
+
 const app = isFirebaseConfigured
   ? getApps().length
     ? getApp()
