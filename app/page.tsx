@@ -93,16 +93,14 @@ export default function Home() {
             </div>
           </div>
 
-          <nav className="hidden items-center gap-1 rounded-full border border-white/10 bg-black/15 p-1 text-sm text-zinc-300 md:flex">
-            <a href="#feed" className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-white">Explorar</a>
-            <a href="/dashboard" className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-white">Meu painel</a>
-            <a href="/admin" className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-white">Moderação</a>
-            <a href="/login" className="rounded-full px-3 py-1.5 transition hover:bg-white/10 hover:text-violet-200">Entrar</a>
+          <nav className="flex items-center gap-2 text-sm">
+            <a href="/login?mode=signup" className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-zinc-300 transition hover:border-violet-400/40 hover:text-white">
+              Criar conta
+            </a>
+            <a href="/login" className="rounded-full bg-violet-500 px-3.5 py-1.5 font-medium text-white transition hover:bg-violet-400">
+              Entrar
+            </a>
           </nav>
-
-          <a href="/login" className="rounded-xl bg-violet-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-400 md:hidden">
-            Acessar
-          </a>
         </header>
 
         <section className="relative mb-10 overflow-hidden rounded-[32px] border border-violet-500/20 bg-[radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),_transparent_30%),radial-gradient(circle_at_top_left,_rgba(168,85,247,0.2),_transparent_35%),linear-gradient(135deg,#0b1020,#111827_45%,#09090f)] p-6 shadow-[0_0_50px_rgba(124,58,237,0.15)] md:p-10">

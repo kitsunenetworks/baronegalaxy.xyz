@@ -8,7 +8,13 @@ import { getFirebaseAuthErrorMessage, signInWithEmail, signInWithGoogle, signUpW
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup">(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "signup") {
+      return "signup";
+    }
+
+    return "login";
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
