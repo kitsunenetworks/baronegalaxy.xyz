@@ -22,6 +22,13 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<AppUserProfile | null>(null);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [bio, setBio] = useState("");
+  const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [githubUrl, setGithubUrl] = useState("");
+  const [telegramUrl, setTelegramUrl] = useState("");
+  const [xdaUrl, setXdaUrl] = useState("");
+  const [devices, setDevices] = useState("");
+  const [profileMessage, setProfileMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -55,10 +62,22 @@ export default function DashboardPage() {
           role: "user",
           bio: "",
           avatarUrl: currentUser.photoURL ?? "",
+          username: "usuario",
+          githubUrl: "",
+          telegramUrl: "",
+          xdaUrl: "",
+          devices: [],
+          badges: [],
         };
 
         setProfile(nextProfile);
         setBio(nextProfile.bio ?? "");
+        setUsername(nextProfile.username ?? "usuario");
+        setDisplayName(nextProfile.displayName ?? "Usuário");
+        setGithubUrl(nextProfile.githubUrl ?? "");
+        setTelegramUrl(nextProfile.telegramUrl ?? "");
+        setXdaUrl(nextProfile.xdaUrl ?? "");
+        setDevices((nextProfile.devices ?? []).join(", "));
         setProjects(userProjects as ProjectSummary[]);
       } catch (error) {
         console.error(error);
@@ -86,15 +105,30 @@ export default function DashboardPage() {
     if (!auth?.currentUser || !profile) return;
 
     setSaving(true);
+    setProfileMessage("");
 
     try {
+      const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+      if (cleanUsername.length < 3) {
+        setProfileMessage("O nome de usuário precisa ter pelo menos 3 caracteres.");
+        return;
+      }
+
+      const cleanDevices = devices.split(",").map((device) => device.trim()).filter(Boolean).slice(0, 10);
       await updateUserProfile(auth.currentUser.uid, {
         ...profile,
         bio,
-        displayName: profile.displayName,
+        username: cleanUsername,
+        displayName: displayName.trim() || "Usuário",
+        githubUrl: githubUrl.trim(),
+        telegramUrl: telegramUrl.trim(),
+        xdaUrl: xdaUrl.trim(),
+        devices: cleanDevices,
       });
 
-      setProfile((current) => (current ? { ...current, bio } : current));
+      setProfile((current) => (current ? { ...current, bio, username: cleanUsername, displayName: displayName.trim() || "Usuário", githubUrl: githubUrl.trim(), telegramUrl: telegramUrl.trim(), xdaUrl: xdaUrl.trim(), devices: cleanDevices } : current));
+      setUsername(cleanUsername);
+      setProfileMessage("Perfil atualizado com sucesso.");
     } finally {
       setSaving(false);
     }
@@ -155,7 +189,19 @@ export default function DashboardPage() {
               <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-violet-500/15 text-violet-200">
                 <Camera className="h-6 w-6" />
               </div>
-              <p className="text-sm text-zinc-300">{profile?.email ?? "Adicionar foto de perfil"}</p>
+              <p className="text-lg font-semibold text-zinc-100">@{profile?.username ?? "usuario"}</p>
+              <p className="mt-1 text-sm text-zinc-400">{profile?.email ?? "Conta Firebase"}</p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 block text-sm text-zinc-400">Nome de usuário</span>
+                <input value={username} onChange={(event) => setUsername(event.target.value)} placeholder="seu_nome" maxLength={30} className="w-full rounded-2xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-200 outline-none transition focus:border-violet-500/70" />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm text-zinc-400">Nome público</span>
+                <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Seu nome ou alias" maxLength={60} className="w-full rounded-2xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-200 outline-none transition focus:border-violet-500/70" />
+              </label>
             </div>
 
             <label className="block">
@@ -167,6 +213,23 @@ export default function DashboardPage() {
                 className="w-full rounded-2xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-200 outline-none ring-0 transition focus:border-violet-500/70"
               />
             </label>
+
+            <label className="block">
+              <span className="mb-2 block text-sm text-zinc-400">Dispositivos</span>
+              <input value={devices} onChange={(event) => setDevices(event.target.value)} placeholder="POCO F3, Redmi Note 4" className="w-full rounded-2xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-zinc-200 outline-none transition focus:border-violet-500/70" />
+            </label>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <input value={githubUrl} onChange={(event) => setGithubUrl(event.target.value)} placeholder="GitHub URL" className="rounded-2xl border border-white/10 bg-zinc-950/60 px-3 py-3 text-sm text-zinc-200 outline-none focus:border-violet-500/70" />
+              <input value={telegramUrl} onChange={(event) => setTelegramUrl(event.target.value)} placeholder="Telegram URL" className="rounded-2xl border border-white/10 bg-zinc-950/60 px-3 py-3 text-sm text-zinc-200 outline-none focus:border-violet-500/70" />
+              <input value={xdaUrl} onChange={(event) => setXdaUrl(event.target.value)} placeholder="XDA URL" className="rounded-2xl border border-white/10 bg-zinc-950/60 px-3 py-3 text-sm text-zinc-200 outline-none focus:border-violet-500/70" />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {(profile?.badges?.length ? profile.badges : ["Membro"]).map((badge) => <span key={badge} className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-200">{badge}</span>)}
+            </div>
+
+            {profileMessage && <p className={`text-sm ${profileMessage.includes("sucesso") ? "text-emerald-300" : "text-amber-200"}`}>{profileMessage}</p>}
 
             <button
               onClick={handleSaveProfile}

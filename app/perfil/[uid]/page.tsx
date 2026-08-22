@@ -13,7 +13,7 @@ type ProfileProject = {
   likesCount?: number;
   commentsCount?: number;
 };
-type PublicProfile = Pick<AppUserProfile, "uid" | "displayName" | "bio" | "avatarUrl">;
+type PublicProfile = Pick<AppUserProfile, "uid" | "username" | "displayName" | "bio" | "avatarUrl" | "githubUrl" | "telegramUrl" | "xdaUrl" | "devices" | "badges">;
 
 export default function ProfilePage({ params }: { params: { uid: string } }) {
   const [profile, setProfile] = useState<PublicProfile | null>(null);
@@ -69,10 +69,23 @@ export default function ProfilePage({ params }: { params: { uid: string } }) {
           <div>
             <p className="text-sm uppercase tracking-[0.2em] text-violet-400">Perfil público</p>
             <h1 className="mt-2 text-3xl font-semibold">{profile.displayName}</h1>
-            <p className="mt-2 text-sm text-zinc-400">Membro da comunidade</p>
+            <p className="mt-2 text-sm text-cyan-200">@{profile.username || "usuario"}</p>
           </div>
         </div>
         {profile.bio && <p className="mt-6 max-w-2xl leading-7 text-zinc-300">{profile.bio}</p>}
+        {(profile.devices?.length > 0 || profile.badges?.length > 0) && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {profile.devices?.map((device) => <span key={device} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-300">{device}</span>)}
+            {profile.badges?.map((badge) => <span key={badge} className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-200">{badge}</span>)}
+          </div>
+        )}
+        {(profile.githubUrl || profile.telegramUrl || profile.xdaUrl) && (
+          <div className="mt-6 flex flex-wrap gap-4 text-sm">
+            {profile.githubUrl && <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="text-violet-200 hover:underline">GitHub</a>}
+            {profile.telegramUrl && <a href={profile.telegramUrl} target="_blank" rel="noreferrer" className="text-violet-200 hover:underline">Telegram</a>}
+            {profile.xdaUrl && <a href={profile.xdaUrl} target="_blank" rel="noreferrer" className="text-violet-200 hover:underline">XDA Developers</a>}
+          </div>
+        )}
       </section>
 
       <section className="mt-8">

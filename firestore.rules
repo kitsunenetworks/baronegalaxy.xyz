@@ -23,7 +23,7 @@ service cloud.firestore {
         (isSelf(userId) &&
           request.resource.data.uid == resource.data.uid &&
           request.resource.data.role == resource.data.role &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'bio', 'avatarUrl', 'updatedAt']));
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['username', 'displayName', 'bio', 'avatarUrl', 'githubUrl', 'telegramUrl', 'xdaUrl', 'devices', 'badges', 'updatedAt']));
       allow delete: if isOwner();
     }
 
@@ -33,10 +33,14 @@ service cloud.firestore {
         request.resource.data.uid == userId &&
         request.resource.data.displayName is string &&
         request.resource.data.bio is string &&
-        request.resource.data.avatarUrl is string;
+        request.resource.data.avatarUrl is string &&
+        request.resource.data.username is string && request.resource.data.username.size() <= 30 &&
+        request.resource.data.githubUrl is string && request.resource.data.telegramUrl is string &&
+        request.resource.data.xdaUrl is string && request.resource.data.devices is list &&
+        request.resource.data.devices.size() <= 10 && request.resource.data.badges is list;
       allow update: if isSelf(userId) &&
         request.resource.data.uid == resource.data.uid &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid', 'displayName', 'bio', 'avatarUrl', 'updatedAt']);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid', 'username', 'displayName', 'bio', 'avatarUrl', 'githubUrl', 'telegramUrl', 'xdaUrl', 'devices', 'badges', 'updatedAt']);
       allow delete: if isOwner() || isSelf(userId);
     }
 

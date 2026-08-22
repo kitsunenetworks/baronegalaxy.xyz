@@ -19,6 +19,12 @@ export type AppUserProfile = {
   role: AppUserRole;
   bio: string;
   avatarUrl: string;
+  username: string;
+  githubUrl: string;
+  telegramUrl: string;
+  xdaUrl: string;
+  devices: string[];
+  badges: string[];
   createdAt?: string;
   updatedAt?: string;
 };
@@ -64,18 +70,30 @@ export async function signUpWithEmail(email: string, password: string) {
   await setDoc(doc(currentDb, "users", credential.user.uid), {
     uid: credential.user.uid,
     email: credential.user.email,
+    username: "usuario",
     displayName: credential.user.displayName ?? "Usuário",
     role: "user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     bio: "",
     avatarUrl: "",
+    githubUrl: "",
+    telegramUrl: "",
+    xdaUrl: "",
+    devices: [],
+    badges: [],
   }, { merge: true });
   await setDoc(doc(currentDb, "publicProfiles", credential.user.uid), {
     uid: credential.user.uid,
+    username: "usuario",
     displayName: "Usuário",
     bio: "",
     avatarUrl: "",
+    githubUrl: "",
+    telegramUrl: "",
+    xdaUrl: "",
+    devices: [],
+    badges: [],
     updatedAt: new Date().toISOString(),
   }, { merge: true });
 
@@ -93,9 +111,15 @@ export async function signInWithEmail(email: string, password: string) {
   if (!profileSnapshot.exists()) {
     await setDoc(profileRef, {
       uid: credential.user.uid,
+      username: "usuario",
       displayName: credential.user.displayName ?? "Usuário",
       bio: "",
       avatarUrl: credential.user.photoURL ?? "",
+      githubUrl: "",
+      telegramUrl: "",
+      xdaUrl: "",
+      devices: [],
+      badges: [],
       updatedAt: new Date().toISOString(),
     }, { merge: true });
   }
@@ -123,12 +147,23 @@ export async function signInWithGoogle() {
       updatedAt: new Date().toISOString(),
       bio: "",
       avatarUrl: credential.user.photoURL ?? "",
+      githubUrl: "",
+      telegramUrl: "",
+      xdaUrl: "",
+      devices: [],
+      badges: [],
     });
     await setDoc(doc(currentDb, "publicProfiles", uid), {
       uid,
+      username: "usuario",
       displayName: credential.user.displayName ?? "Usuário",
       bio: "",
       avatarUrl: credential.user.photoURL ?? "",
+      githubUrl: "",
+      telegramUrl: "",
+      xdaUrl: "",
+      devices: [],
+      badges: [],
       updatedAt: new Date().toISOString(),
     }, { merge: true });
   }
@@ -163,9 +198,15 @@ export async function updateUserProfile(uid: string, updates: Partial<AppUserPro
   }, { merge: true });
   await setDoc(doc(db, "publicProfiles", uid), {
     uid,
+    username: updates.username ?? "usuario",
     displayName: updates.displayName ?? "Usuário",
     bio: updates.bio ?? "",
     avatarUrl: updates.avatarUrl ?? "",
+    githubUrl: updates.githubUrl ?? "",
+    telegramUrl: updates.telegramUrl ?? "",
+    xdaUrl: updates.xdaUrl ?? "",
+    devices: updates.devices ?? [],
+    badges: updates.badges ?? [],
     updatedAt: new Date().toISOString(),
   }, { merge: true });
 }
@@ -173,7 +214,7 @@ export async function updateUserProfile(uid: string, updates: Partial<AppUserPro
 export async function getPublicUserProfile(uid: string) {
   if (!isFirebaseConfigured || !db) return null;
   const snapshot = await getDoc(doc(db, "publicProfiles", uid));
-  return snapshot.exists() ? (snapshot.data() as Pick<AppUserProfile, "uid" | "displayName" | "bio" | "avatarUrl">) : null;
+  return snapshot.exists() ? (snapshot.data() as Pick<AppUserProfile, "uid" | "username" | "displayName" | "bio" | "avatarUrl" | "githubUrl" | "telegramUrl" | "xdaUrl" | "devices" | "badges">) : null;
 }
 
 export function isOwner(user: User | null | undefined) {
