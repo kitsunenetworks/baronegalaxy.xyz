@@ -73,3 +73,76 @@ input,
 textarea {
   font: inherit;
 }
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 14px 16px 0;
+}
+
+.site-nav__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1180px;
+  min-height: 58px;
+  margin: 0 auto;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(9, 14, 27, 0.88);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.24), inset 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(18px);
+}
+
+.site-brand,
+.site-account,
+.site-nav__actions,
+.site-nav__links {
+  display: flex;
+  align-items: center;
+}
+
+.site-brand { gap: 10px; color: #f4f4f5; }
+.site-brand__mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid rgba(196, 181, 253, 0.25);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(34, 211, 238, 0.12));
+  color: #ddd6fe;
+  font-size: 12px;
+  font-weight: 700;
+}
+.site-brand strong, .site-brand small, .site-account strong, .site-account small { display: block; }
+.site-brand strong { font-size: 14px; }
+.site-brand small { margin-top: 2px; color: rgba(103, 232, 249, 0.72); font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase; }
+.site-nav__links { gap: 4px; margin-left: auto; }
+.site-nav__links a, .site-nav__register { padding: 8px 11px; color: #a1a1aa; font-size: 12px; transition: color 180ms ease, background 180ms ease; }
+.site-nav__links a:hover, .site-nav__register:hover { border-radius: 10px; background: rgba(255, 255, 255, 0.06); color: #fff; }
+.site-nav__actions { gap: 8px; }
+.site-account { gap: 8px; padding: 4px 8px 4px 4px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; }
+.site-account__avatar { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 9px; background: rgba(139, 92, 246, 0.18); color: #c4b5fd; }
+.site-account__avatar svg { width: 17px; }
+.site-account__copy strong { color: #f4f4f5; font-size: 11px; }
+.site-account__copy small { margin-top: 2px; color: #67e8f9; font-size: 9px; }
+.site-nav__publish, .site-nav__login { display: inline-flex; align-items: center; gap: 5px; padding: 9px 12px; border-radius: 11px; background: #8b5cf6; color: white; font-size: 12px; font-weight: 600; }
+.site-nav__publish svg { width: 14px; }
+.site-nav__logout { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; background: rgba(255,255,255,.04); color: #a1a1aa; cursor: pointer; }
+.site-nav__logout svg { width: 15px; }
+.site-nav__logout:hover { color: #fca5a5; }
+.site-nav__login:hover, .site-nav__publish:hover { background: #a78bfa; }
+
+@media (max-width: 700px) {
+  .site-nav { padding: 8px 10px 0; }
+  .site-nav__inner { padding: 7px 8px; }
+  .site-brand small, .site-nav__links, .site-account__copy, .site-nav__publish span, .site-nav__register { display: none; }
+  .site-brand__mark { width: 34px; height: 34px; }
+  .site-account { border: 0; padding: 0; }
+  .site-nav__publish { width: 34px; height: 34px; justify-content: center; padding: 0; }
+  .site-nav__actions { margin-left: auto; }
+}

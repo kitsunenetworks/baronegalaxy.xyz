@@ -82,27 +82,6 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#050816] text-zinc-50">
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-        <header className="mb-8 flex items-center justify-between rounded-2xl border border-white/10 bg-[#0c1222]/90 px-4 py-3 shadow-[0_0_40px_rgba(139,92,246,0.18)] backdrop-blur-sm md:rounded-full">
-          <div className="flex items-center gap-3">
-            <div className="brand-mark flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/20 text-sm font-semibold text-violet-200">
-              <span>BG</span>
-            </div>
-            <div>
-              <p className="text-lg font-semibold tracking-tight">BaroneGalaxy</p>
-              <p className="hidden text-[10px] uppercase tracking-[0.22em] text-cyan-300/70 sm:block">Android independent lab</p>
-            </div>
-          </div>
-
-          <nav className="flex items-center gap-2 text-sm">
-            <a href="/login?mode=signup" className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-zinc-300 transition hover:border-violet-400/40 hover:text-white">
-              Criar conta
-            </a>
-            <a href="/login" className="rounded-full bg-violet-500 px-3.5 py-1.5 font-medium text-white transition hover:bg-violet-400">
-              Entrar
-            </a>
-          </nav>
-        </header>
-
         <section className="relative mb-10 overflow-hidden rounded-[32px] border border-violet-500/20 bg-[radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),_transparent_30%),radial-gradient(circle_at_top_left,_rgba(168,85,247,0.2),_transparent_35%),linear-gradient(135deg,#0b1020,#111827_45%,#09090f)] p-6 shadow-[0_0_50px_rgba(124,58,237,0.15)] md:p-10">
           <div className="pointer-events-none absolute right-8 top-8 hidden h-32 w-32 rounded-full border border-cyan-300/20 md:block" />
           <div className="pointer-events-none absolute right-16 top-16 hidden h-16 w-16 rounded-full border border-violet-300/20 md:block" />

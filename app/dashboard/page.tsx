@@ -173,7 +173,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-3xl border border-white/10 bg-zinc-900/70 p-6">
+        <div id="perfil" className="rounded-3xl border border-white/10 bg-zinc-900/70 p-6">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/20 text-violet-200">
               <UserCircle2 className="h-6 w-6" />
@@ -241,14 +241,14 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-zinc-900/70 p-6">
+        <div id="postagens" className="rounded-3xl border border-white/10 bg-zinc-900/70 p-6">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-200">
               <ShieldCheck className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-lg font-medium">Novo projeto</p>
-              <p className="text-sm text-zinc-400">Formulário rápido</p>
+              <p className="text-lg font-medium">Minhas postagens</p>
+              <p className="text-sm text-zinc-400">Projetos e atividade publicada</p>
             </div>
           </div>
 

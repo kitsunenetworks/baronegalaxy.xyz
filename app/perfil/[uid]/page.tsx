@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getPublicUserProfile, type AppUserProfile } from "@/lib/auth";
+import { getPublicUserProfile, getUserProfile, type AppUserProfile } from "@/lib/auth";
 import { fetchUserProjects } from "@/lib/projects";
-import { isFirebaseConfigured } from "@/lib/firebase";
+import { auth, isFirebaseConfigured } from "@/lib/firebase";
 
 type ProfileProject = {
   id: string;
@@ -20,6 +20,8 @@ export default function ProfilePage({ params }: { params: { uid: string } }) {
   const [projects, setProjects] = useState<ProfileProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [role, setRole] = useState<AppUserProfile["role"]>("user");
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -37,6 +39,15 @@ export default function ProfilePage({ params }: { params: { uid: string } }) {
 
         setProfile(profileData);
         setProjects(projectList as ProfileProject[]);
+
+        if (auth) {
+          const currentUser = auth.currentUser;
+          if (currentUser?.uid === params.uid) {
+            const privateProfile = await getUserProfile(currentUser.uid);
+            setRole(privateProfile?.role ?? "user");
+            setIsOwnProfile(true);
+          }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Não foi possível carregar o perfil.");
       } finally {
@@ -70,7 +81,9 @@ export default function ProfilePage({ params }: { params: { uid: string } }) {
             <p className="text-sm uppercase tracking-[0.2em] text-violet-400">Perfil público</p>
             <h1 className="mt-2 text-3xl font-semibold">{profile.displayName}</h1>
             <p className="mt-2 text-sm text-cyan-200">@{profile.username || "usuario"}</p>
+            <p className="mt-1 text-xs uppercase tracking-[0.16em] text-zinc-500">{role === "owner" ? "Owner" : "Membro"}</p>
           </div>
+          {isOwnProfile && <Link href="/dashboard#perfil" className="rounded-full border border-violet-400/30 px-4 py-2 text-sm text-violet-200 transition hover:bg-violet-500/10">Editar perfil</Link>}
         </div>
         {profile.bio && <p className="mt-6 max-w-2xl leading-7 text-zinc-300">{profile.bio}</p>}
         {(profile.devices?.length > 0 || profile.badges?.length > 0) && (
