@@ -13,10 +13,13 @@ import { fetchProjects, type ProjectData } from "@/lib/projects";
 
 type FeedProject = ProjectData & { id: string };
 
-const statCards = [
-  { label: "Projetos", value: "Live" },
-  { label: "Comunidade", value: "Ativa" },
-  { label: "Curtidas hoje", value: "Firebase" },
+const categories = [
+  { label: "Custom ROMs", value: "LineageOS, AOSP e builds" },
+  { label: "Kernels", value: "Tweaks e performance" },
+  { label: "Root & Recovery", value: "Magisk, KernelSU e TWRP" },
+  { label: "Firmware", value: "Vendor e imagens oficiais" },
+  { label: "Hardware", value: "ESP32 e embedded" },
+  { label: "Labs", value: "Web, AI e software" },
 ];
 
 function formatDate(value: unknown) {
@@ -61,7 +64,9 @@ export default function Home() {
 
     return projects.filter((project) => {
       if (project.status === "hidden") return false;
-      if (activeTag !== "Todos" && !project.tags?.some((tag) => tag.toLowerCase() === activeTag.toLowerCase())) return false;
+      if (activeTag !== "Todos" &&
+        !project.tags?.some((tag) => tag.toLowerCase() === activeTag.toLowerCase()) &&
+        !project.category?.toLowerCase().includes(activeTag.toLowerCase())) return false;
       if (!normalizedSearch) return true;
 
       return [project.title, project.summary, project.authorName, ...(project.tags ?? [])]
@@ -70,16 +75,21 @@ export default function Home() {
     });
   }, [activeTag, projects, search]);
 
+  const visibleProjects = projects.filter((project) => project.status !== "hidden");
+  const totalLikes = visibleProjects.reduce((sum, project) => sum + (project.likesCount ?? 0), 0);
+  const totalThanks = visibleProjects.reduce((sum, project) => sum + (project.thanksCount ?? 0), 0);
+
   return (
     <main className="min-h-screen bg-[#050816] text-zinc-50">
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
         <header className="mb-8 flex items-center justify-between rounded-2xl border border-white/10 bg-[#0c1222]/90 px-4 py-3 shadow-[0_0_40px_rgba(139,92,246,0.18)] backdrop-blur-sm md:rounded-full">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/20 text-sm font-semibold text-violet-200">
-              BG
+            <div className="brand-mark flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/20 text-sm font-semibold text-violet-200">
+              <span>BG</span>
             </div>
             <div>
               <p className="text-lg font-semibold tracking-tight">BaroneGalaxy</p>
+              <p className="hidden text-[10px] uppercase tracking-[0.22em] text-cyan-300/70 sm:block">Android independent lab</p>
             </div>
           </div>
 
@@ -100,15 +110,15 @@ export default function Home() {
           <div className="pointer-events-none absolute right-16 top-16 hidden h-16 w-16 rounded-full border border-violet-300/20 md:block" />
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-violet-200">
+              <div className="hero-kicker mb-4 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-violet-200">
                 <Sparkles className="h-3.5 w-3.5" />
                 Firebase-first community
               </div>
-              <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-white md:text-6xl">
-                O laboratório da próxima ideia.
+              <h1 className="hero-title max-w-3xl text-4xl font-bold tracking-tight text-white md:text-6xl">
+                O laboratório da próxima ideia<span className="text-cyan-300">.</span>
               </h1>
               <p className="mt-4 max-w-xl text-base text-zinc-300 md:text-lg">
-                Descubra projetos independentes, acompanhe quem está construindo e publique o que você acabou de criar.
+                Custom ROMs, kernels, recoveries e software independente para quem prefere construir o próximo passo.
               </p>
             </div>
 
@@ -123,13 +133,35 @@ export default function Home() {
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {statCards.map((item) => (
+            {[
+              { label: "Projetos publicados", value: loading ? "—" : String(visibleProjects.length) },
+              { label: "Curtidas na comunidade", value: loading ? "—" : String(totalLikes) },
+              { label: "Agradecimentos", value: loading ? "—" : String(totalThanks) },
+            ].map((item) => (
               <div key={item.label} className="rounded-2xl border border-white/10 bg-zinc-950/40 p-4 backdrop-blur-sm">
                 <p className="text-sm text-zinc-400">{item.label}</p>
                 <p className="mt-2 text-2xl font-semibold text-white">{item.value}</p>
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="mb-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {categories.map((category) => (
+            <button
+              key={category.label}
+              onClick={() => {
+                setSearch("");
+                setActiveTag(category.label === "Custom ROMs" ? "Android" : category.label);
+                document.getElementById("feed")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="category-tile group text-left"
+            >
+              <span className="text-sm font-semibold text-zinc-100 transition group-hover:text-cyan-200">{category.label}</span>
+              <span className="mt-1 block text-xs text-zinc-500">{category.value}</span>
+              <ArrowUpRight className="absolute right-4 top-4 h-4 w-4 text-zinc-600 transition group-hover:text-cyan-300" />
+            </button>
+          ))}
         </section>
 
         <section id="feed" className="rounded-[28px] border border-white/10 bg-zinc-950/60 p-4 md:p-6">
@@ -176,7 +208,8 @@ export default function Home() {
               </div>
             ) : projectList.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-violet-500/30 bg-violet-500/5 p-8 text-center text-zinc-300">
-                {search || activeTag !== "Todos" ? "Nenhum projeto corresponde a este filtro." : "Nenhum projeto publicado ainda. Seja o primeiro a criar um no dashboard."}
+                {search || activeTag !== "Todos" ? "Nenhum projeto corresponde a este filtro." : "O feed está pronto para a primeira build. Publique um projeto e abra a conversa."}
+                {!search && activeTag === "Todos" && <a href="/dashboard/new" className="mt-4 inline-flex rounded-full border border-violet-400/30 px-4 py-2 text-sm text-violet-200 transition hover:bg-violet-500/10">Publicar primeira build</a>}
               </div>
             ) : (
               projectList.map((project) => (

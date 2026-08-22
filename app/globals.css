@@ -27,7 +27,41 @@ body {
     radial-gradient(circle at top, rgba(139, 92, 246, 0.18), transparent 25%),
     linear-gradient(180deg, #050816 0%, #090b12 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+.brand-mark {
+  box-shadow: inset 0 0 0 1px rgba(196, 181, 253, 0.18), 0 0 24px rgba(139, 92, 246, 0.22);
+}
+
+.hero-kicker {
+  animation: rise-in 600ms ease-out both;
+}
+
+.hero-title {
+  animation: rise-in 700ms 80ms ease-out both;
+}
+
+.category-tile {
+  position: relative;
+  min-height: 92px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.92), rgba(10, 14, 27, 0.8));
+  padding: 18px;
+  text-align: left;
+  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+.category-tile:hover {
+  border-color: rgba(103, 232, 249, 0.35);
+  background: linear-gradient(135deg, rgba(24, 35, 55, 0.96), rgba(10, 14, 27, 0.9));
+  transform: translateY(-2px);
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 a {
