@@ -160,6 +160,12 @@ export default function DashboardPage() {
         </Link>
       </div>
 
+      <nav className="mb-8 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-zinc-900/60 p-2" aria-label="Navegação do painel">
+        <a href="#perfil" className="rounded-xl bg-violet-500/15 px-4 py-2 text-sm font-medium text-violet-200 transition hover:bg-violet-500/25">Meu perfil</a>
+        <a href="#postagens" className="rounded-xl px-4 py-2 text-sm text-zinc-400 transition hover:bg-white/5 hover:text-white">Minhas postagens</a>
+        <Link href="/dashboard/new" className="ml-auto inline-flex items-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-200 transition hover:bg-cyan-400/20"><PencilLine className="h-4 w-4" /> Nova publicação</Link>
+      </nav>
+
       <section className="grid gap-4 md:grid-cols-3">
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur">

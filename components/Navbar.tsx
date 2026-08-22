@@ -67,7 +67,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link href="/login?mode=signup" className="site-nav__register">Criar conta</Link>
+              <Link href="/registro" className="site-nav__register">Criar conta</Link>
               <Link href="/login" className="site-nav__login">Entrar</Link>
             </>
           )}
